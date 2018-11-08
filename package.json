@@ -1,0 +1,26 @@
+{
+  "name": "ngsi-adapter",
+  "version": "0.0.2",
+  "description": "Adapter between NGSI v2 API and VICINITY's TD",
+  "author": "ATOS Spain S.A.",
+  "private": true,
+  "scripts": {
+    "start": "nodemon ./bin/www"
+  },
+  "dependencies": {
+    "app-root-path": "^2.1.0",
+    "axios": "^0.18.0",
+    "bluebird": "^3.5.1",
+    "debug": "~3.1.0",
+    "express": "~4.16.3",
+    "http-errors": "~1.6.3",
+    "lodash": "^4.17.10",
+    "moment": "^2.22.2",
+    "nodemon": "^1.18.3",
+    "pretty-hrtime": "^1.0.3",
+    "pug": "2.0.3",
+    "winston": "^2.4.3",
+    "winston-daily-rotate-file": "^3.5.0",
+    "winston-loggly-bulk": "^2.0.3"
+  }
+}
