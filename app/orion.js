@@ -19,112 +19,149 @@
 const axios = require('axios');
 const _ = require('lodash');
 const Promise = require('bluebird');
+const moment = require('moment');
 const prettyHrtime = require('pretty-hrtime');
 
 const config = require('../config/config.js');
-const subscriptions = require('./orion-subscriptions.js');
 const logger = require('../utils/log.js')(module);
 
 class Orion {
   constructor() {
     // Singleton class
-    if (!Orion.instance) {
-      this.devices = new Array;
-      // If flag is set to true, subscribe to all discovered entities
-      // if (config.contextBroker.suscribe_context) {
-      //   this.subs = new subscriptions.OrionSubscriptions();
-      //   this.subs.updateContext = this.updateContext;
-      // }      
-            
+    if (!Orion.instance) {     
+
+      /**
+       * In case a new device is registered and the active discovery is enabled, 
+       * the Adapter automatically sends the proper registration message to the Agent
+       */
+      this.knownDevices = [];
+
+      /**
+       * Subscription ID handler
+       */
+      this.subscriptionId = '';
+
       Orion.instance = this;
     }
     return Orion.instance;
   }
 
+  start() {
+    
+    logger.info('Starting interaction with ORION module');
+
+      this.initSubscriptions();
+  };
+
+
+  initSubscriptions () {
+
+    const self = this;
+
+    const body = {
+      description: 'Subscription to VICINITY Adapter',
+      subject: {
+        entities: [{
+          idPattern: '.*'
+        }]
+      },
+      notification: {
+        'http': {
+          'url': config.server[config.server.mode].subscription_endpoint
+        }
+      },
+      expires: moment().add(7, 'd').toISOString(),
+      throttling: 5
+    };   
+
+    axios({
+        method: 'post',
+        url: config.orion.endpoint + 'subscriptions',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'fiware-service': config.orion['fiware-service'],
+          'fiware-servicepath': config.orion['fiware-servicepath']
+        },
+        data: body
+      })
+      .then(
+        (response) => {          
+          self.subscriptionId = response.headers.location.split('/').pop();
+          logger.info('Subscription successful with ID ' + self.subscriptionId)
+        },
+        (error) => {
+          logger.error('Orion POST subscription error - ' + JSON.stringify(error));
+        });
+
+  };
+  
   /**
-   * Return the list of context entities
-   * @returns List of context entities registered in the various Context Brokers
-   */
-  getDevices() {
-    return this.devices;
-  }
-
-  /**
-   * Return the context information of a particular device
-   * @param {String} id Device ID
-   * @returns Context information about the entity "id"
-   */
-  getDevice(id) {
-    return _.find(this.devices, {
-      id: id
-    });
-  }
-
-  /**
-   * Update the current values
-   * @param {Object} published_data Context information received from the subscription sink
-   */
-  updateContext(published_data) {
-    const hit = _.find(Orion.instance.devices, {
-      id: published_data.id
-    });
-    if (hit) {
-      _.merge(hit, published_data);
-    }
-  }
-
-
-
-  /**
-   * Get all entities of type X
-   * @param {Object} host_info Information about the host (extracted from file config.js)
-   * @param {String} type Entity type
+   * Get all entities stored at Orion CB (with particular fiware-service and fiware-servicepth)   
    * @returns Array with all the context entities that belong to the specified typ
    */
-  getEntities(host_info, type) {
-    const endpoint = host_info.orion_host +
-      '/v2/entities?limit=250&type=' + type
-
+  getEntities() {
     const headers = {
       'Accept': 'application/json',
-      // 'X-Auth-Token': host_info.auth ? auth.orion[host_info.rz]['X-Auth-Token'] : '',
-      'fiware-service': _.has(host_info, 'fiware_service') ? host_info['fiware_service'] : ''
+      'fiware-service': config.orion['fiware-service'],
+      'fiware-servicepath': config.orion['fiware-servicepath']
     }
     return axios({
       method: 'get',
-      url: endpoint,
+      url: config.orion.endpoint + 'entities',
       headers: headers
     })
   }
 
-
-  start() {
-    const self = this;
-
-
-    logger.info ("Starting interaction with ORION module");
-
-   
-  };
+  /**
+   * Get the information of a particular context element
+   * @param {String} id Context element ID
+   */
+  getEntity(id) {
+    const headers = {
+      'Accept': 'application/json',
+      'fiware-service': config.orion['fiware-service'],
+      'fiware-servicepath': config.orion['fiware-servicepath']
+    }
+    return axios({
+      method: 'get',
+      url: config.orion.endpoint + 'entities',
+      headers: headers
+    })
+  }
 
   /**
-   * Close all active subscriptions
+   * Close all subscriptions (NOTE: This method is called upon a SIGINT signal)
    */
   close() {
-    const self = this;
-    return new Promise(function (resolve, reject) {
-      if (self.subs) {
-        self.subs.close().then(response => resolve());
+    const self = this;   
+
+    return new Promise(function (resolve, reject) {      
+      if (self.subscriptionId) {       
+
+        axios({
+          method: 'delete',
+          url: config.orion.endpoint + 'subscriptions/' + self.subscriptionId,
+          headers: {
+            'Accept': 'application/json',   
+            'fiware-service': config.orion['fiware-service'],
+            'fiware-servicepath': config.orion['fiware-servicepath']         
+          }
+        }).then(
+            (response) => {
+              logger.info('Suscription cancelled (ID - ' + self.subscriptionId + ')');              
+              resolve(response.status);
+            },
+            (error) => {
+              logger.error('Orion DELETE subscription error - ' + error);
+              reject(error);
+            }
+          );
       } else {
         resolve();
       }
     })
   };
-
 }
-
 const instance = new Orion();
-Object.freeze(instance);
-
-// exports.Orion = Orion
 exports.instance = instance;

@@ -16,16 +16,15 @@
 // along with VICINITY.  If not, see <http://www.gnu.org/licenses/>.
 
 
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
 
-var indexRouter = require('./routes/index');
-var streams = require('./routes/subscription-streams');
+const indexRouter = require('./routes/index');
+const streams = require('./routes/subscription-streams');
 
-var app = express();
-var orion = require('./app/orion').instance;
-
+const app = express();
+const orion = require('./app/orion').instance;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -37,8 +36,8 @@ app.use(express.urlencoded({
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/streams', streams);
+app.use('/adapter', indexRouter);
+app.use('/subscriptions', streams);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -58,6 +57,8 @@ app.use(function (err, req, res, next) {
 
 // Init ORION
 orion.start()
+
+// Subscribe to all context element
 
 process.on('SIGINT', function () {
   console.log("Caught interrupt signal");

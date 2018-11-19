@@ -24,15 +24,86 @@ const _ = require('lodash');
 const  config = require('../config/config');
 const  logger = require('../utils/log')(module);
 const  orion = require('../app/orion').instance;
+const  adapter = require('../app/ngsi2vicinity');
 
-// Test
-// const axios = require('axios');
-
-router.get('/objects', function (req, res, next) {
-  logger.info(req);
+router.get('/', function (req, res, next) {  
   return res.json({});
 });
 
+/**
+ * Get all context elements registered on the Orion CB 
+ */
+router.get('/objects', function (req, res, next) {
+  logger.info("Get objects method called --- ");
 
+  orion.getEntities().then(
+    (response) => {
+      logger.info(response.data)
+      let output = adapter.Ngsi2Vicinity.translate2Td(response.data)
+
+      console.log(output);
+
+      return res.json(output);
+    },
+    (error) => {
+      logger.error('Something happened')
+    }
+  )  
+});
+
+/**
+ * Get the info of a single context element
+ */
+router.get('/objects/:oid/properties/:pid', function (req, res, next) {  
+
+  orion.getEntity(req.params.oid).then(
+    (response) => {     
+      
+      const hit_oid = _.find(response.data, {id: req.params.oid});
+
+      if (hit_oid) {
+        const hit_pid = _.find(hit_oid, (value, key) => {              
+          return _.toLower(req.params.pid) === _.lowerCase(key.replace(/[_0-9]/g, ''));
+        })
+
+        if (hit_pid) {
+
+          // ToDo: Timestamp handling (non-unique option)
+          let timestamp = '';
+          if (_.has(hit_pid.metadata, 'TimeInstant')) {
+            
+            timestamp = hit_pid.metadata.TimeInstant.value
+          }
+          else if (_.has(hit_oid, 'TimeInstant')) {
+            timestamp = hit_oid.TimeInstant.value
+          }
+          else if (_.has(hit_oid, 'dateModified')) {
+            timestamp = hit_oid.dateModified.value
+          }
+          else if (_.has(hit_oid, 'dateObserved')) {
+            timestamp = hit_oid.dateObserved.value
+          }
+
+          return res.json({
+            timestamp: hit_pid.metadata.TimeInstant.value,
+            value: hit_pid.value
+          })
+        }
+        else {
+          return res.status(404).send('Property ' + req.params.pid + ' not found');  
+        }               
+      }
+      else {
+        return res.status(404).send('Entity ' + req.params.oid + ' not found');
+      }
+    },
+    (error) => {
+      logger.error("Something happened")
+      
+    }
+  )
+
+
+});
 
 module.exports = router;
