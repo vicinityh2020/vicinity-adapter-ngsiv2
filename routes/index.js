@@ -38,15 +38,13 @@ router.get('/objects', function (req, res, next) {
 
   orion.getEntities().then(
     (response) => {
-      logger.info(response.data)
-      let output = adapter.Ngsi2Vicinity.translate2Td(response.data)
-
-      console.log(output);
-
+      // logger.info(response.data)
+      let output = adapter.Ngsi2Vicinity.translate2Td(response.data);
+      // console.log(output);
       return res.json(output);
     },
     (error) => {
-      logger.error('Something happened')
+      logger.error('Something happened ' + error)
     }
   )  
 });
@@ -72,16 +70,16 @@ router.get('/objects/:oid/properties/:pid', function (req, res, next) {
           let timestamp = '';
           if (_.has(hit_pid.metadata, 'TimeInstant')) {
             
-            timestamp = hit_pid.metadata.TimeInstant.value
+            timestamp = hit_pid.metadata.TimeInstant.value;
           }
           else if (_.has(hit_oid, 'TimeInstant')) {
-            timestamp = hit_oid.TimeInstant.value
+            timestamp = hit_oid.TimeInstant.value;
           }
           else if (_.has(hit_oid, 'dateModified')) {
-            timestamp = hit_oid.dateModified.value
+            timestamp = hit_oid.dateModified.value;
           }
           else if (_.has(hit_oid, 'dateObserved')) {
-            timestamp = hit_oid.dateObserved.value
+            timestamp = hit_oid.dateObserved.value;
           }
 
           return res.json({
@@ -98,12 +96,11 @@ router.get('/objects/:oid/properties/:pid', function (req, res, next) {
       }
     },
     (error) => {
-      logger.error("Something happened")
+      logger.error("Something happened " + error)
       
     }
   )
-
-
 });
+
 
 module.exports = router;

@@ -30,11 +30,12 @@ config.server = {
      /**
      * Server listening port (to configure Express)
      */
-    port: 9999,
+    port: 10000,
     /**
      * Sink to send the asynchronous publications (from RZs' Orions)
      */
-    subscription_endpoint: 'http://81.172.89.210:6001/subscriptions'
+     subscription_endpoint: 'http://localhost:10000/subscriptions'
+    
   },
   /**
    * Production server configuration
@@ -43,11 +44,11 @@ config.server = {
      /**
      * Server listening port (to configure Express)
      */
-    port: 9999,
+    port: 10000,
     /**
      * Sink to send the asynchronous publications (from RZs' Orions)
      */
-    subscription_host_endpoint: 'http://81.172.89.210:6001/subscriptions'
+    subscription_host_endpoint: 'http://localhost:10000/subscriptions'
   },
 }
 
@@ -62,18 +63,51 @@ config.server = {
     /**
      * Orion CB location
      */
-    endpoint: 'http://localhost:1026',
+    endpoint: 'http://localhost:1026/v2/',
 
     /**
      * FIWARE Service attribute
      */
-    "fiware-service": 'vicinity',
+    'fiware-service': '<your service>',
 
     /**
      * FIWARE Service-path attribute
      */
-    "fiware-service-path": "ioelab",
+    'fiware-servicepath': '<your service path>',
   };
+
+  /**
+   * Configuration of the VICINITY adapter
+   */
+  config.adapter = {
+
+    /**
+     * Adapter identifier. NOTE: It must match the ID set at the Agent configuration file
+     */
+      'adapter-id': 'adapter-ngsiv2',
+
+      /**
+       * The adapter supports the active discovery, where it is responsible for registering their own devices
+       */
+      active_discovery: false,
+
+      /**
+       * If the active discovery is enabled, the adapter has to 
+       */
+      agent_endpoint: 'http://localhost:9997/agent/objects',
+
+      /**
+       * Before sending the data upon request, it might be possible to assess that it is compliant with Vicinity's TD
+       */
+      thing_description_validation: false,
+
+      /**
+       * If the above option is enabled, 
+       */
+      validation_endpoint: 'https://vicinity.bavenir.eu:3000/api/repository/validate'
+
+  };
+
 
   /**
    * 

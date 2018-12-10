@@ -28,9 +28,11 @@ router.get('/', function(req, res, next) {
 // Subscriptions handler
 router.post('/', function(req, res, next) {     
 
-  // console.log(req.body.data)
-  orion.subs.manageNotification (req.body.subscriptionId, req.body.data);
+  logger.info("Message received");
+
+  // console.log(req.body.data)  
   res.send('Post received');
+  orion.handleNotification(req.body.subscriptionId, req.body.data)
 });
 
 module.exports = router;

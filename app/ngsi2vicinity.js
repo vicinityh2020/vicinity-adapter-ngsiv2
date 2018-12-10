@@ -33,7 +33,7 @@ class Ngsi2Vicinity {
 
       let output = {
          "adapter-id": config.adapter["adapter-id"],
-         "thing-descriptions": []
+         // "thing-descriptions": []
       }
 
       aux = _.map(input, o => {
@@ -60,7 +60,8 @@ class Ngsi2Vicinity {
          }
       })
 
-      output["thing-descriptions"].push(aux);
+      // output["thing-descriptions"].push(_.head(aux));
+      output["thing-descriptions"] = aux;
 
       return output;
    }
@@ -76,7 +77,7 @@ class Ngsi2Vicinity {
             pid: aux.properties.pid,
             monitors: aux.properties.monitors,
             read_link: {
-               href: "/device/" + oid + "/property/" + aux.properties.pid,
+               href: "/objects/" + oid + "/properties/" + aux.properties.pid,
                output: {
                   type: "object",
                   field: [{
@@ -87,7 +88,9 @@ class Ngsi2Vicinity {
                      },
                      {
                         name: "value",
-                        type: Ngsi2Vicinity.CheckType(attribute.type, attribute.value)
+                        schema: {
+                           type: Ngsi2Vicinity.CheckType(attribute.type, attribute.value)
+                        }
                      }
                   ]
                }
@@ -105,14 +108,16 @@ class Ngsi2Vicinity {
 
    }
 
-   static CheckType(datatype, value) {     
+   static CheckType(datatype, value) {
 
       let out;
 
       // ToDo: Update the list of types 
       switch (datatype) {
          case "Number":
-            _.isInteger(value) ? out = "integer" : out = "float";
+         // Possible bug: The validator does not pass the "float" value type
+            // _.isInteger(value) ? out = "integer" : out = "float";
+            _.isInteger(value) ? out = "integer" : out = "integer";
             break;
          case "String":
             out = "string";

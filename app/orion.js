@@ -23,6 +23,7 @@ const moment = require('moment');
 const prettyHrtime = require('pretty-hrtime');
 
 const config = require('../config/config.js');
+const  adapter = require('../app/ngsi2vicinity');
 const logger = require('../utils/log.js')(module);
 
 class Orion {
@@ -34,7 +35,7 @@ class Orion {
        * In case a new device is registered and the active discovery is enabled, 
        * the Adapter automatically sends the proper registration message to the Agent
        */
-      this.knownDevices = [];
+      this.known_devices = [];
 
       /**
        * Subscription ID handler
@@ -49,14 +50,32 @@ class Orion {
   start() {
     
     logger.info('Starting interaction with ORION module');
+    const self = this;
 
-      this.initSubscriptions();
+    // Initial device discovery
+    this.getEntities().then(
+      (response) => {
+        _.forEach(response.data, o => {          
+          if (! _.find(self.known_devices)) {            
+            self.known_devices.push(o.id);
+            logger.debug ('New device discovered - ' + o.id);
+          }
+        });
+
+      },
+      (error) => {
+        logger.error('Something happened ' + error)
+      }
+    )  
+
+
+    this.initSubscriptions();
   };
 
 
   initSubscriptions () {
 
-    const self = this;
+    const self = this;    
 
     const body = {
       description: 'Subscription to VICINITY Adapter',
@@ -72,10 +91,10 @@ class Orion {
       },
       expires: moment().add(7, 'd').toISOString(),
       throttling: 5
-    };   
+    };       
 
     axios({
-        method: 'post',
+        method: 'POST',
         url: config.orion.endpoint + 'subscriptions',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +110,7 @@ class Orion {
           logger.info('Subscription successful with ID ' + self.subscriptionId)
         },
         (error) => {
-          logger.error('Orion POST subscription error - ' + JSON.stringify(error));
+          logger.error('Orion POST subscription error - ' + error);
         });
 
   };
@@ -100,7 +119,7 @@ class Orion {
    * Get all entities stored at Orion CB (with particular fiware-service and fiware-servicepth)   
    * @returns Array with all the context entities that belong to the specified typ
    */
-  getEntities() {
+  getEntities() {    
     const headers = {
       'Accept': 'application/json',
       'fiware-service': config.orion['fiware-service'],
@@ -129,6 +148,14 @@ class Orion {
       headers: headers
     })
   }
+
+
+  handleNotification(subscriptionId, data) {    
+
+    logger.info("Subscription ID -"  + subscriptionId + " Temperature " + _.head(data).temperature_1.value );    
+
+  }
+
 
   /**
    * Close all subscriptions (NOTE: This method is called upon a SIGINT signal)

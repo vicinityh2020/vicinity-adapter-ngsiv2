@@ -18,7 +18,7 @@ const mapper = {
 
       properties: {
          pid: "Temperature",
-         monitors: "adapters:Thermometer",
+         monitors: "adapters:DeviceTemperature",
          
       },
       actions: {
@@ -26,7 +26,7 @@ const mapper = {
       },
       events: {
          eid: "get-temperature",
-         monitors: "adapters:Thermometer"
+         monitors: "adapters:DeviceTemperature"
 
       }
    },
