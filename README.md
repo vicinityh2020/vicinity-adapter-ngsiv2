@@ -53,7 +53,7 @@ config.server = {
      */
     port: 10000,  
     /**
-     * Sink to send the asynchronous publications (from RZs' Orions)
+     * Sink to send the asynchronous publications 
      */
      subscription_endpoint: 'http://localhost:10000/subscriptions'
     

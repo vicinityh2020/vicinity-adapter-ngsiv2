@@ -68,7 +68,6 @@ class Orion {
       }
     )  
 
-
     this.initSubscriptions();
   };
 
@@ -153,6 +152,9 @@ class Orion {
   handleNotification(subscriptionId, data) {    
 
     logger.info("Subscription ID -"  + subscriptionId + " Temperature " + _.head(data).temperature_1.value );    
+
+
+    
 
   }
 
