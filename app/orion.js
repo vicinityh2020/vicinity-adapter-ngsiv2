@@ -54,7 +54,8 @@ class Orion {
 
     // Initial device discovery
     this.getEntities().then(
-      (response) => {
+      (response) => {       
+
         _.forEach(response.data, o => {          
           if (! _.find(self.known_devices)) {            
             self.known_devices.push(o.id);
@@ -151,7 +152,7 @@ class Orion {
 
   handleNotification(subscriptionId, data) {    
 
-    logger.info("Subscription ID -"  + subscriptionId + " Temperature " + _.head(data).temperature_1.value );    
+    logger.info("Subscription ID - "  + subscriptionId + " Temperature " + _.head(data).temperature_1.value );    
 
 
     

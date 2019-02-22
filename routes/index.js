@@ -57,6 +57,9 @@ router.get('/objects/:oid/properties/:pid', function (req, res, next) {
   orion.getEntity(req.params.oid).then(
     (response) => {     
       
+
+      console.log(response.data)
+
       const hit_oid = _.find(response.data, {id: req.params.oid});
 
       if (hit_oid) {
@@ -68,8 +71,7 @@ router.get('/objects/:oid/properties/:pid', function (req, res, next) {
 
           // ToDo: Timestamp handling (non-unique option)
           let timestamp = '';
-          if (_.has(hit_pid.metadata, 'TimeInstant')) {
-            
+          if (_.has(hit_pid.metadata, 'TimeInstant')) {            
             timestamp = hit_pid.metadata.TimeInstant.value;
           }
           else if (_.has(hit_oid, 'TimeInstant')) {

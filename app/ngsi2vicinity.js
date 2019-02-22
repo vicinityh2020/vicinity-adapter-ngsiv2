@@ -37,7 +37,6 @@ class Ngsi2Vicinity {
       }
 
       aux = _.map(input, o => {
-
          let properties = [];
          const temp = _.omit(o, ['id', 'type', 'TimeInstant']);
 
@@ -50,10 +49,81 @@ class Ngsi2Vicinity {
             })
          }
 
+
+         // Work around for the semantic interoperability demo
+         const located_info = [{
+               location_type: "s4bldg:Building",
+               label: "ATOS Office Santander",
+               location_id: "https://atos.net/es/spain"
+            },
+            {
+               location_type: "s4bldg:BuildingSpace",
+               label: "Office"
+            },
+            {
+               location_type: "s4city:City",
+               label: "Santander",
+               location_id: "http://dbpedia.org/page/Santander,_Spain"
+            },
+            {
+               location_type: "s4city:Country",
+               label: "Spain",
+               location_id: "http://dbpedia.org/resource/Spain"
+            }
+         ]
+
+         // Static GPS coordinates
+
+         properties.push({
+            pid: "longitude",
+            monitors: "adapters:GPSLongitude",
+            read_link: {
+               href: "/objects/{oid}/properties/{pid}",
+               'static-value': {
+                  longitude_value: 43.452192
+               },
+               output: {
+                  type: "object",
+                  field: [{
+                     name: "longitude_value",
+                     predicate: "core:value",
+                     schema: {
+                        "type": "double"
+                     }
+                  }]
+               }
+            }
+         });
+
+         properties.push({
+            pid: "latitude",
+            monitors: "adapters:GPSLatitude",
+            read_link: {
+               href: "/objects/{oid}/properties/{pid}",
+               'static-value': {
+                  latitude_value: -3.874887
+               },
+               output: {
+                  type: "object",
+                  field: [{
+                     name: "latitude_value",
+                     predicate: "core:value",
+                     schema: {
+                        type: "double"
+                     }
+                  }]
+               }
+            }
+         })
+
+         // End of workaround
+
          return {
             name: 'NGSI-' + o.id,
-            oid: o.id,
-            type: "core:Device",
+            oid: 'NGSI-' + o.id,
+            type: 'core:Device',
+            version: '0.6',
+            'located-in': located_info,
             actions: [],
             events: [],
             properties: properties,
@@ -77,7 +147,7 @@ class Ngsi2Vicinity {
             pid: aux.properties.pid,
             monitors: aux.properties.monitors,
             read_link: {
-               href: "/objects/" + oid + "/properties/" + aux.properties.pid,
+               href: "/objects/{oid}/properties/{pid}",
                output: {
                   type: "object",
                   field: [{
@@ -88,6 +158,7 @@ class Ngsi2Vicinity {
                      },
                      {
                         name: "value",
+                        predicate: "core:value",
                         schema: {
                            type: Ngsi2Vicinity.CheckType(attribute.type, attribute.value)
                         }
@@ -115,9 +186,9 @@ class Ngsi2Vicinity {
       // ToDo: Update the list of types 
       switch (datatype) {
          case "Number":
-         // Possible bug: The validator does not pass the "float" value type
+            // Possible bug: The validator does not pass the "float" value type
             // _.isInteger(value) ? out = "integer" : out = "float";
-            _.isInteger(value) ? out = "integer" : out = "integer";
+            _.isInteger(value) ? out = "integer" : out = "double";
             break;
          case "String":
             out = "string";
