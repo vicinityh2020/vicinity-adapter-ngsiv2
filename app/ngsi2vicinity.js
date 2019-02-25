@@ -121,7 +121,8 @@ class Ngsi2Vicinity {
          return {
             name: 'NGSI-' + o.id,
             oid: 'NGSI-' + o.id,
-            type: 'core:Device',
+            // type: 'core:Device',
+            type: 'adapters:Thermostat',
             version: '0.6',
             'located-in': located_info,
             actions: [],
