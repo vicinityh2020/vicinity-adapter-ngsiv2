@@ -55,9 +55,7 @@ router.get('/objects', function (req, res, next) {
 router.get('/objects/:oid/properties/:pid', function (req, res, next) {  
 
   orion.getEntity(req.params.oid).then(
-    (response) => {           
-
-      console.log(response.data)
+    (response) => {                
 
       const hit_oid = _.find(response.data, {id: req.params.oid});
 
