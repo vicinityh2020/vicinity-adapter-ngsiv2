@@ -119,8 +119,8 @@ class Ngsi2Vicinity {
          // End of workaround
 
          return {
-            name: 'NGSI-' + o.id,
-            oid: 'NGSI-' + o.id,
+            name: o.id,
+            oid: o.id,
             // type: 'core:Device',
             type: 'adapters:Thermostat',
             version: '0.6',
