@@ -55,8 +55,7 @@ router.get('/objects', function (req, res, next) {
 router.get('/objects/:oid/properties/:pid', function (req, res, next) {  
 
   orion.getEntity(req.params.oid).then(
-    (response) => {     
-      
+    (response) => {           
 
       console.log(response.data)
 
@@ -84,16 +83,20 @@ router.get('/objects/:oid/properties/:pid', function (req, res, next) {
             timestamp = hit_oid.dateObserved.value;
           }
 
+          logger.debug('/objects/' + req.params.oid + '/properties/' + req.params.pid + ' - 200');
+
           return res.json({
             timestamp: hit_pid.metadata.TimeInstant.value,
             value: hit_pid.value
           })
         }
         else {
+          logger.error('/objects/' + req.params.oid + '/properties/' + req.params.pid + ' - 404');
           return res.status(404).send('Property ' + req.params.pid + ' not found');  
         }               
       }
       else {
+        logger.error('/objects/' + req.params.oid + '/properties/' + req.params.pid + ' - 404');
         return res.status(404).send('Entity ' + req.params.oid + ' not found');
       }
     },
