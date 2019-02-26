@@ -79,8 +79,8 @@ class Ngsi2Vicinity {
             monitors: "adapters:GPSLongitude",
             read_link: {
                href: "/objects/{oid}/properties/{pid}",
-               'static-value': {
-                  longitude_value: 43.452192
+               'static-value': {                  
+                  longitude_value: -3.874887
                },
                output: {
                   type: "object",
@@ -100,8 +100,8 @@ class Ngsi2Vicinity {
             monitors: "adapters:GPSLatitude",
             read_link: {
                href: "/objects/{oid}/properties/{pid}",
-               'static-value': {
-                  latitude_value: -3.874887
+               'static-value': {                  
+                  latitude_value: 43.452192
                },
                output: {
                   type: "object",
